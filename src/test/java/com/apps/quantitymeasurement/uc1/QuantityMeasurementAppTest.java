@@ -3,8 +3,8 @@ package com.apps.quantitymeasurement.uc1;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.apps.quantitymeasurement.uc1.QuantityMeasurementApp.Feet;
-import com.apps.quantitymeasurement.uc1.QuantityMeasurementApp.Inches;
+import com.apps.quantitymeasurement.uc2.QuantityMeasurementApp.Feet;
+import com.apps.quantitymeasurement.uc2.QuantityMeasurementApp.Inches;
 
 public class QuantityMeasurementAppTest {
 

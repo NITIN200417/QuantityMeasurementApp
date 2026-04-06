@@ -1,4 +1,4 @@
-package com.apps.quantitymeasurement.uc1;
+package com.apps.quantitymeasurement.uc2;
 
 public class QuantityMeasurementApp {
 
