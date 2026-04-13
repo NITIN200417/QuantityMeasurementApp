@@ -2,9 +2,6 @@ package com.apps.quantitymeasurement.uc5;
 
 public class Length {
 
-    private double value;
-    private LengthUnit unit;
-
     public enum LengthUnit{
         FEET(12.0),
         INCHES(1.0),
@@ -14,6 +11,7 @@ public class Length {
         private final double conversionFactor;
 
         LengthUnit(double conversionFactor){
+
             this.conversionFactor = conversionFactor;
         }
 
@@ -21,18 +19,23 @@ public class Length {
             return conversionFactor;
         }
     }
+
+    private final double value;
+    private final LengthUnit unit;
+
     public Length(double value, LengthUnit unit){
         this.value = value;
         this.unit = unit;
     }
 
     private double convertToBaseUnit(){
-        double base = value * this.unit.getConversionFactor();
+         double base =value * this.unit.getConversionFactor();
 
         return Math.round(base * 100)/100;
     }
 
     private boolean compare(Length thatLength){
+        if(thatLength == null) return false;
         return Double.compare(this.convertToBaseUnit(), thatLength.convertToBaseUnit()) == 0;
     }
 
@@ -55,9 +58,13 @@ public class Length {
 
     public Length convertTo(LengthUnit targetUnit){
 
+        if(targetUnit == null){
+            throw new IllegalArgumentException("Target unit cannot be null");
+        }
         double baseValue = this.convertToBaseUnit();
         double convertdValue = baseValue / targetUnit.getConversionFactor();
-        convertdValue = Math.round(convertdValue * 100)/100;
+
+        //convertdValue = Math.round(convertdValue * 100)/100;
 
         return new Length(convertdValue, targetUnit);
     }
