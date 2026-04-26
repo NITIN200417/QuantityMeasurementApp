@@ -57,7 +57,7 @@ public class Length {
 
         double baseValue = this.convertToBaseUnit();
         double convertdValue = baseValue / targetUnit.getConversionFactor();
-        convertdValue = Math.round(convertdValue * 100)/100;
+        convertdValue = Math.round(convertdValue * 100) /100;
 
         return new Length(convertdValue, targetUnit);
     }
