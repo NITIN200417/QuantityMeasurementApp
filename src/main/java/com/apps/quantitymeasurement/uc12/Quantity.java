@@ -6,7 +6,7 @@ public class Quantity<U extends IMeasurable> {
 
     private double value;
     private U unit;
-    public Quantity(double value, WeightUnit unit){
+    public Quantity(double value, VolumeUnit unit){
         if(unit==null) throw new IllegalArgumentException("Unit cannot be null");
         if(Double.isNaN(value) || Double.isInfinite(value)) throw new IllegalArgumentException("Invalid value");
         this.value=value;
