@@ -36,7 +36,7 @@ pipeline {
 
                     sh '''
                     chmod +x mvnw
-                    ./mvnw clean package -DskipTests
+                    ./mvnw clean install -Dmaven.test.skip=true
                     '''
                 }
             }
