@@ -1,0 +1,108 @@
+pipeline {
+
+    agent any
+
+    environment {
+
+        FRONTEND_IMAGE =
+            "aparachit/quantity-frontend:v1"
+    }
+
+    stages {
+
+        // =====================================
+        // CLONE FRONTEND CODE
+        // =====================================
+
+        stage('Clone Frontend Code') {
+
+            steps {
+
+                git branch: 'main',
+
+                    url: 'https://github.com/NITIN200417/QuantityMeasurementApp.git'
+            }
+        }
+
+        // =====================================
+        // BUILD FRONTEND IMAGE
+        // =====================================
+
+        stage('Build Frontend Docker Image') {
+
+            steps {
+
+                sh "docker build -t ${FRONTEND_IMAGE} ."
+            }
+        }
+
+        // =====================================
+        // DOCKER LOGIN
+        // =====================================
+
+        stage('DockerHub Login') {
+
+            steps {
+
+                withCredentials([
+
+                    usernamePassword(
+
+                        credentialsId: 'dockerhub-cred',
+
+                        usernameVariable: 'DOCKER_USER',
+
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
+                    sh '''
+
+                    echo $DOCKER_PASS |
+
+                    docker login -u $DOCKER_USER
+
+                    --password-stdin
+                    '''
+                }
+            }
+        }
+
+        // =====================================
+        // PUSH IMAGE
+        // =====================================
+
+        stage('Push Frontend Image') {
+
+            steps {
+
+                sh "docker push ${FRONTEND_IMAGE}"
+            }
+        }
+
+        // =====================================
+        // DEPLOY CONTAINER
+        // =====================================
+
+        stage('Deploy Frontend Container') {
+
+            steps {
+
+                sh '''
+
+                docker stop frontend-container || true
+
+                docker rm frontend-container || true
+
+                docker pull ${FRONTEND_IMAGE}
+
+                docker run -d \\
+                --name frontend-container \\
+                -p 5173:5173 \\
+                ${FRONTEND_IMAGE}
+
+                '''
+            }
+        }
+    }
+}
