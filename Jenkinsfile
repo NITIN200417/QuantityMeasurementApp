@@ -4,53 +4,81 @@ pipeline {
 
     environment {
 
-        BACKEND_IMAGE =
-            "aparachit/quantity-backend:v1"
+        BACKEND_IMAGE = "aparachit/quantity-backend:v1"
+
+        FRONTEND_IMAGE = "aparachit/quantity-frontend:v1"
     }
 
     stages {
 
-        // =====================================
-        // CLONE BACKEND CODE
-        // =====================================
+        // =====================================================
+        // CLONE CODE
+        // =====================================================
 
-        stage('Clone Backend Code') {
+        stage('Clone Code') {
 
             steps {
 
                 git branch: 'main',
-
-                    url: 'https://github.com/NITIN200417/QuantityMeasurementApp.git'
+                        url: 'https://github.com/NITIN200417/QuantityMeasurementApp.git'
             }
         }
 
-        // =====================================
-        // BUILD SPRING BOOT
-        // =====================================
+        // =====================================================
+        // BUILD BACKEND
+        // =====================================================
 
-        dir('backend') {
-
-            sh '''
-            chmod +x mvnw
-            ./mvnw clean package -DskipTests
-            '''
-        }
-
-        // =====================================
-        // BUILD DOCKER IMAGE
-        // =====================================
-
-        stage('Build Docker Image') {
+        stage('Build Backend') {
 
             steps {
 
-                sh "docker build -t ${BACKEND_IMAGE} ."
+                dir('backend') {
+
+                    sh '''
+                    chmod +x mvnw
+                    ./mvnw clean package -DskipTests
+                    '''
+                }
             }
         }
 
-        // =====================================
-        // DOCKER LOGIN
-        // =====================================
+        // =====================================================
+        // BUILD BACKEND DOCKER IMAGE
+        // =====================================================
+
+        stage('Build Backend Docker Image') {
+
+            steps {
+
+                dir('backend') {
+
+                    sh """
+                    docker build -t ${BACKEND_IMAGE} .
+                    """
+                }
+            }
+        }
+
+        // =====================================================
+        // BUILD FRONTEND DOCKER IMAGE
+        // =====================================================
+
+        stage('Build Frontend Docker Image') {
+
+            steps {
+
+                dir('frontend') {
+
+                    sh """
+                    docker build -t ${FRONTEND_IMAGE} .
+                    """
+                }
+            }
+        }
+
+        // =====================================================
+        // DOCKER HUB LOGIN
+        // =====================================================
 
         stage('DockerHub Login') {
 
@@ -58,62 +86,93 @@ pipeline {
 
                 withCredentials([
 
-                    usernamePassword(
+                        usernamePassword(
 
-                        credentialsId: 'dockerhub-cred',
+                                credentialsId: 'dockerhub-cred',
 
-                        usernameVariable: 'DOCKER_USER',
+                                usernameVariable: 'DOCKER_USER',
 
-                        passwordVariable: 'DOCKER_PASS'
-                    )
+                                passwordVariable: 'DOCKER_PASS'
+                        )
+
                 ]) {
 
                     sh '''
-
-                    echo $DOCKER_PASS |
-
-                    docker login -u $DOCKER_USER
-
-                    --password-stdin
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                     '''
                 }
             }
         }
 
-        // =====================================
-        // PUSH IMAGE
-        // =====================================
+        // =====================================================
+        // PUSH BACKEND IMAGE
+        // =====================================================
 
-        stage('Push Docker Image') {
+        stage('Push Backend Image') {
 
             steps {
 
-                sh "docker push ${BACKEND_IMAGE}"
+                sh """
+                docker push ${BACKEND_IMAGE}
+                """
             }
         }
 
-        // =====================================
-        // DEPLOY CONTAINER
-        // =====================================
+        // =====================================================
+        // PUSH FRONTEND IMAGE
+        // =====================================================
+
+        stage('Push Frontend Image') {
+
+            steps {
+
+                sh """
+                docker push ${FRONTEND_IMAGE}
+                """
+            }
+        }
+
+        // =====================================================
+        // DEPLOY BACKEND CONTAINER
+        // =====================================================
 
         stage('Deploy Backend Container') {
 
             steps {
 
-                sh '''
-
+                sh """
                 docker stop backend-container || true
-
                 docker rm backend-container || true
 
                 docker pull ${BACKEND_IMAGE}
 
-                docker run -d \\
-                --name backend-container \\
-                -p 8080:8080 \\
-                ${BACKEND_IMAGE}
+                docker run -d \
+                    --name backend-container \
+                    -p 8080:8080 \
+                    ${BACKEND_IMAGE}
+                """
+            }
+        }
 
-                '''
+        // =====================================================
+        // DEPLOY FRONTEND CONTAINER
+        // =====================================================
+
+        stage('Deploy Frontend Container') {
+
+            steps {
+
+                sh """
+                docker stop frontend-container || true
+                docker rm frontend-container || true
+
+                docker pull ${FRONTEND_IMAGE}
+
+                docker run -d \
+                    --name frontend-container \
+                    -p 5173:5173 \
+                    ${FRONTEND_IMAGE}
+                """
             }
         }
     }
