@@ -28,12 +28,12 @@ pipeline {
         // BUILD SPRING BOOT
         // =====================================
 
-        stage('Build Backend') {
+        dir('backend') {
 
-            steps {
-
-                sh 'mvn clean package -DskipTests'
-            }
+            sh '''
+            chmod +x mvnw
+            ./mvnw clean package -DskipTests
+            '''
         }
 
         // =====================================
